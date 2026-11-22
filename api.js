@@ -29,6 +29,8 @@ function retryAfterMs(res, body) {
     const t = new Date(v).getTime() - Date.now();
     if (!isNaN(t)) return Math.min(Math.max(t, 1000), 60000);
   }
+  const m = body && typeof body.message === 'string' && body.message.match(/retry in (\d+) seconds?/i);
+  if (m) return Math.min(Math.max(Number(m[1]) * 1000, 1000), 60000);
   return 10000;
 }
 
@@ -43,7 +45,7 @@ export class MetaApi {
     this.maxWaitMs = opts.maxWaitMs || 5 * 60 * 1000;
   }
 
-  async request(method, url, { body, query, headers = {}, onWait } = {}) {
+  async request(method, url, { body, query, headers = {}, onWait, maxWaitMs } = {}) {
     if (query) {
       const q = Object.entries(query).filter(([, v]) => v !== undefined && v !== null && v !== '');
       if (q.length) url += '?' + q.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
@@ -56,7 +58,8 @@ export class MetaApi {
       init.headers['Content-Type'] = 'application/json';
       init.body = JSON.stringify(body);
     }
-    const deadline = Date.now() + this.maxWaitMs;
+    const started = Date.now();
+    const deadline = started + (maxWaitMs || this.maxWaitMs);
     for (let attempt = 0; ; attempt++) {
       let res;
       try {
@@ -70,8 +73,8 @@ export class MetaApi {
       if (text) { try { data = JSON.parse(text); } catch { data = { message: text }; } }
       if (res.status === 202) {
         const wait = retryAfterMs(res, data);
-        if (Date.now() + wait > deadline) throw new ApiError('MetaApi is still working on it. Try again in a few minutes.', 202, data);
-        if (onWait) onWait((data && data.message) || 'Working…');
+        if (Date.now() + wait > deadline) throw new ApiError('Still checking with the broker. Tap the button again in a few minutes — it carries on where it left off.', 202, data);
+        if (onWait) onWait(Date.now() - started, (data && data.message) || '');
         await this.sleep(wait);
         continue;
       }
@@ -89,9 +92,10 @@ export class MetaApi {
     return Array.isArray(data) ? data : (data && data.items) || [];
   }
   getAccount(id) { return this.prov('GET', `/users/current/accounts/${id}`); }
-  createAccount(account, onWait) {
+  // Reusing the same transactionId resumes a creation that is still being validated instead of starting a new one.
+  createAccount(account, onWait, transactionId = randomId(32)) {
     return this.prov('POST', '/users/current/accounts', {
-      body: account, headers: { 'transaction-id': randomId(32) }, onWait,
+      body: account, headers: { 'transaction-id': transactionId }, onWait, maxWaitMs: 15 * 60 * 1000,
     });
   }
   deployAccount(id) { return this.prov('POST', `/users/current/accounts/${id}/deploy`); }
@@ -153,6 +157,18 @@ export class MetaApi {
 }
 
 // ---- pure helpers (unit tested) ----
+
+export function newTransactionId() { return randomId(32); }
+
+export function waitText(ms) {
+  const sec = Math.floor(ms / 1000);
+  return `Checking the login with the broker… ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}. This can take a few minutes — keep this screen open.`;
+}
+
+export function findExisting(accounts, login, server) {
+  if (!login) return null;
+  return accounts.find((a) => String(a.login) === String(login) && String(a.server).toLowerCase() === String(server).toLowerCase()) || null;
+}
 
 export const LOT_MODES = {
   balance: 'Match my risk (scaled to their balance)',

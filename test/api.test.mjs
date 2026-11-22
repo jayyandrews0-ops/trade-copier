@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MetaApi, buildSubscriber, buildSubscription, readSubscription, validateSettings, friendlyError, followerStatus, ApiError } from '../api.js';
+import { MetaApi, waitText, findExisting, buildSubscriber, buildSubscription, readSubscription, validateSettings, friendlyError, followerStatus, ApiError } from '../api.js';
 
 function fakeFetch(responses, calls) {
   return async (url, init) => {
@@ -96,4 +96,20 @@ test('followerStatus', () => {
   assert.equal(followerStatus(dep, sub, 'S').key, 'copying');
   assert.equal(followerStatus(dep, { subscriptions: [{ strategyId: 'S', closeOnly: 'by-position' }] }, 'S').key, 'paused');
   assert.equal(followerStatus(dep, sub, 'S', [{ reason: 'day-balance-difference' }]).key, 'stopped-out');
+});
+
+test('202 without Retry-After header uses the wait from the message', async () => {
+  const waits = []; const seen = [];
+  const api = new MetaApi('T', { fetch: fakeFetch([{ status: 202, body: { message: 'Account connection validation is in progress, please retry in 60 seconds (abc)' } }, { status: 201, body: { id: 'x' } }], []), sleep: async (ms) => waits.push(ms) });
+  await api.createAccount({}, (ms, msg) => seen.push(msg), 'TX');
+  assert.deepEqual(waits, [60000]);
+  assert.match(seen[0], /validation/);
+});
+
+test('waitText and findExisting', () => {
+  assert.match(waitText(83000), /1:23/);
+  const acc = [{ _id: 'a', login: '850112524', server: 'FPTrading-Live' }];
+  assert.equal(findExisting(acc, '850112524', 'fptrading-live')._id, 'a');
+  assert.equal(findExisting(acc, '1', 'FPTrading-Live'), null);
+  assert.equal(findExisting(acc, '', 'FPTrading-Live'), null);
 });

@@ -1,5 +1,5 @@
 // Caches the app shell only. MetaApi calls (other origins) always go to the network.
-const CACHE_VERSION = 'trade-copier-v1';
+const CACHE_VERSION = 'trade-copier-v2';
 const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './api.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 

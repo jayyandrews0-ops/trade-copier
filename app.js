@@ -1,5 +1,5 @@
 import {
-  MetaApi, buildSubscriber, readSubscription, validateSettings, friendlyError, followerStatus, LOT_MODES,
+  MetaApi, newTransactionId, waitText, findExisting, buildSubscriber, readSubscription, validateSettings, friendlyError, followerStatus, LOT_MODES,
 } from './api.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -167,6 +167,18 @@ function wireLotFields(form) {
 }
 const readLot = (form) => ({ mode: form.elements.mode.value, multiplier: Number(form.elements.multiplier.value), fixedLot: Number(form.elements.fixedLot.value) });
 
+// Creates an account, resuming an unfinished attempt for the same details and never making duplicates.
+async function createOnce(acct, form) {
+  const existing = findExisting(await api.listAccounts(), acct.login, acct.server);
+  if (existing) return { id: existing._id, existing };
+  const key = `tc_tx_${acct.copyFactoryRoles[0]}_${acct.login || acct.name}@${acct.server}`.toLowerCase();
+  let tx = localStorage.getItem(key);
+  if (!tx) { tx = newTransactionId(); localStorage.setItem(key, tx); }
+  const r = await api.createAccount(acct, (ms) => setMsg(form, waitText(ms)), tx);
+  localStorage.removeItem(key);
+  return r;
+}
+
 // ---------- master ----------
 function addMasterDialog() {
   const body = openDialog(`<h3>Add master account</h3>
@@ -186,10 +198,11 @@ function addMasterDialog() {
     const v = Object.fromEntries(new FormData(form));
     busy(form, true); setMsg(form, 'Connecting to your broker… this can take a minute or two.');
     try {
-      await api.createAccount({
+      const r = await createOnce({
         name: v.name.trim(), login: v.login.trim(), password: v.password, server: v.server.trim(), platform: 'mt5', magic: 0,
         copyFactoryRoles: ['PROVIDER'], keywords: v.broker.trim() ? [v.broker.trim()] : undefined, tags: [TAG, 'master'],
-      }, (msg) => setMsg(form, msg));
+      }, form);
+      if (r.existing && !roles(r.existing).includes('PROVIDER')) throw new Error('This account is already added as a follower. Remove it there first.');
       setMsg(form, 'Added! Setting up copying…', 'ok');
       await load();
       closeDialog();
@@ -254,7 +267,8 @@ function addFollowerDialog() {
     busy(form, true);
     setMsg(form, mode === 'details' ? 'Connecting to their broker… this can take a minute or two.' : 'Creating secure link…');
     try {
-      const created = await api.createAccount(acct, (msg) => setMsg(form, msg));
+      const created = await createOnce(acct, form);
+      if (created.existing && !roles(created.existing).includes('SUBSCRIBER')) throw new Error('This account is already your master account.');
       if (mode === 'link') {
         const link = await api.configurationLink(created.id, 7);
         await load();

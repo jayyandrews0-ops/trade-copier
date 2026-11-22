@@ -1,10 +1,10 @@
 // Fake MetaApi for testing the app without a real account: node tools/mock-server.mjs [port]
 // Open the app with ?api=http://localhost:PORT and any token. Visit /mock/configure/<accountId> to
-// simulate a follower entering their login. Server name "bad" returns a server-not-found error.
+// simulate a follower entering their login. Server name "bad" returns a server-not-found error; "slow" answers 202 twice first.
 import http from 'node:http';
 const port = Number(process.argv[2] || 8787);
 const accounts = []; const strategies = []; const subscribers = [];
-let n = 0;
+let n = 0; const pending = {};
 const send = (res, status, body) => {
   res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE', 'Access-Control-Allow-Headers': 'auth-token,content-type,transaction-id' });
   res.end(body === undefined ? '' : JSON.stringify(body));
@@ -27,6 +27,7 @@ http.createServer(async (req, res) => {
   if (p === '/users/current/accounts' && m === 'GET') return send(res, 200, accounts);
   if (p === '/users/current/accounts' && m === 'POST') {
     if (body.server === 'bad') return send(res, 400, { message: 'Server not found', details: { code: 'E_SRV_NOT_FOUND', serversByBrokers: { 'FP Markets': ['FPMarketsSC-Live', 'FPMarketsSC-Demo'] } } });
+    if (body.server === 'slow' && (pending[req.headers['transaction-id']] = (pending[req.headers['transaction-id']] || 0) + 1) < 3) return send(res, 202, { message: 'Account connection validation is in progress, please retry in 2 seconds (x)' });
     const a = { _id: 'acc' + ++n, ...body, state: body.login ? 'DEPLOYED' : 'DRAFT', connectionStatus: body.login ? 'CONNECTED' : 'DISCONNECTED' };
     delete a.password; accounts.push(a);
     return send(res, 201, { id: a._id, state: a.state });
