@@ -1,0 +1,55 @@
+:root{--bg:#0d1117;--card:#161b22;--line:#30363d;--text:#e6edf3;--muted:#8b949e;--green:#3fb950;--red:#f85149;--amber:#d29922;--blue:#2f81f7}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+#app{max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 8px) 14px calc(env(safe-area-inset-bottom) + 24px)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.top h1{font-size:24px;margin:0}
+.top-actions{display:flex;gap:8px}
+button{font:inherit;color:var(--text);background:#21262d;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+button:disabled{opacity:.5}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+button.danger{background:transparent;border-color:var(--red);color:var(--red)}
+button.icon{width:44px;height:44px;padding:0;font-size:20px}
+button.small{padding:8px 12px;font-size:15px}
+button.link{background:none;border:none;color:var(--blue);padding:4px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.card h2,.card h3{margin:0 0 8px}
+h2.section{font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 4px}
+.row-between{display:flex;align-items:center;justify-content:space-between}
+.muted{color:var(--muted)}
+.small-print{font-size:13px;margin-top:18px}
+.steps{padding-left:20px;margin:0 0 12px}.steps li{margin:4px 0}
+a{color:var(--blue)}
+label{display:block;margin:10px 0;font-size:14px;color:var(--muted)}
+input,select,textarea{display:block;width:100%;margin-top:4px;font:inherit;font-size:16px;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px}
+textarea{resize:vertical}
+.check{display:flex;gap:10px;align-items:center;color:var(--text)}
+.check input{width:auto;margin:0}
+.form-msg{min-height:1.2em;font-size:14px;margin:8px 0 0}
+.form-msg.err{color:var(--red)}.form-msg.ok{color:var(--green)}
+.hint{font-size:13px;color:var(--muted);margin:2px 0 0}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn-row button{flex:1}
+.acct{display:flex;align-items:center;gap:12px;width:100%;text-align:left}
+.acct .info{flex:1;min-width:0}
+.acct .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct .meta{font-size:13px;color:var(--muted)}
+.pill{display:inline-block;font-size:13px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.good{background:rgba(63,185,80,.15);color:var(--green)}
+.pill.warn{background:rgba(210,153,34,.15);color:var(--amber)}
+.pill.bad{background:rgba(248,81,73,.15);color:var(--red)}
+.banner{background:rgba(248,81,73,.15);color:var(--red);border-radius:10px;padding:10px 12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:10px 0}
+.seg button{flex:1;border:none;border-radius:0;background:transparent;font-size:14px;padding:10px 6px}
+.seg button.on{background:var(--blue);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips button{padding:6px 10px;font-size:14px}
+.log{list-style:none;padding:0;margin:8px 0 0;font-size:13px;max-height:260px;overflow:auto}
+.log li{padding:6px 0;border-top:1px solid var(--line)}
+.log .ERROR{color:var(--red)}.log .WARN{color:var(--amber)}
+.linkbox{word-break:break-all;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+dialog{width:min(600px,100%);max-height:92vh;margin:auto auto 0;border:1px solid var(--line);border-radius:16px 16px 0 0;background:var(--card);color:var(--text);padding:16px 16px calc(env(safe-area-inset-bottom) + 16px)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog h3{margin:0 0 8px;font-size:20px}
+.spin{display:inline-block;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}

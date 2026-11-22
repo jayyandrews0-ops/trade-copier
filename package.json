@@ -1,0 +1,9 @@
+{
+  "name": "trade-copier",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/",
+    "mock": "node tools/mock-server.mjs"
+  }
+}

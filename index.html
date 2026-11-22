@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Copier">
+<meta name="theme-color" content="#0d1117">
+<title>Trade Copier</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<main id="app">
+  <header class="top">
+    <h1>Trade Copier</h1>
+    <div class="top-actions">
+      <button id="btn-refresh" class="icon" aria-label="Refresh" hidden>↻</button>
+      <button id="btn-settings" class="icon" aria-label="Settings" hidden>⚙︎</button>
+    </div>
+  </header>
+
+  <p id="banner" class="banner" hidden></p>
+
+  <!-- First-time setup -->
+  <section id="view-setup" hidden>
+    <div class="card">
+      <h2>Connect MetaApi</h2>
+      <ol class="steps">
+        <li>Sign up at <a href="https://app.metaapi.cloud" target="_blank" rel="noopener">app.metaapi.cloud</a>.</li>
+        <li>Open <a href="https://app.metaapi.cloud/token" target="_blank" rel="noopener">API access → token</a> and copy your token.</li>
+        <li>Paste it below. It is saved only on this phone.</li>
+      </ol>
+      <form id="form-token">
+        <label>MetaApi token<textarea name="token" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" required></textarea></label>
+        <button type="submit" class="primary">Save &amp; connect</button>
+        <p class="form-msg" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="view-home" hidden>
+    <h2 class="section">Master account</h2>
+    <div id="master"></div>
+    <div class="row-between">
+      <h2 class="section">Followers <span id="follower-count" class="muted"></span></h2>
+      <button id="btn-add-follower" class="small primary" hidden>+ Add</button>
+    </div>
+    <div id="followers"></div>
+    <p class="muted small-print">Updated <span id="updated">–</span>. Copying runs in MetaApi's cloud 24/7 — this app doesn't need to stay open.</p>
+  </section>
+</main>
+
+<dialog id="dlg"><div id="dlg-body"></div></dialog>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
