@@ -444,5 +444,5 @@ $('#btn-settings').onclick = settingsDialog;
 $('#btn-add-follower').onclick = addFollowerDialog;
 setInterval(() => { if (api && document.visibilityState === 'visible' && !dlg.open) load(); }, 20000);
 document.addEventListener('visibilitychange', () => { if (api && document.visibilityState === 'visible') load(); });
-if ('serviceWorker' in navigator && !testApi) navigator.serviceWorker.register('./sw.js').catch(() => {});
+if ('serviceWorker' in navigator && !testApi) navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
 route();
